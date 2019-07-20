@@ -35,4 +35,13 @@ fun Double.asPi(): Number {
     return this / Math.PI
 }
 
+fun <E> List<E>.fori(function: (E) -> Unit) {
+    var i = 0
+    while (i < size) {
+        function(get(i))
+        i++;
+    }
+}
+
+
 

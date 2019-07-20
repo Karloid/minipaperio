@@ -22,7 +22,7 @@ object MainKt {
 
                 myDebugLog(gameMessage.toString())
 
-                val tickState = World(gameMessage.getJSONObject("params"))
+                val tickState = World(gameMessage.getJSONObject("params"), config)
                 val move = Move()
                 robot.onNextTick(tickState, move)
                 move.send()

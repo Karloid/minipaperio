@@ -1,229 +1,147 @@
 class Point2D {
-    val x: Double
-    val y: Double
-    var `val`: Double = 0.toDouble()
+    var x: Int = 0
+    var y: Int = 0
 
-    val intX: Int
-        get() = x.toInt()
+    val isNull: Boolean
+        get() = this.x or this.y == 0
 
-    val intY: Int
-        get() = y.toInt()
-
-    val fx: Float
-        get() = x.toFloat()
-
-    val fy: Float
-        get() = y.toFloat()
-
-    constructor(x: Int, y: Int, `val`: Double) {
-
-        this.x = x.toDouble()
-        this.y = y.toDouble()
-        this.`val` = `val`
-    }
-
-    override fun toString(): String {
-        return "x=" + x.f() +
-                ", y=" + y.f()
-    }
-
-    internal constructor(x: Double, y: Double) {
+    @JvmOverloads
+    constructor(x: Int = 0, y: Int = x) {
         this.x = x
         this.y = y
-        `val` = 0.0
     }
 
-    fun getDistanceTo(x: Double, y: Double): Double {
-        return getDistance(this.x, this.y, x, y)
+    constructor(vect: Point2D) {
+        this.x = vect.x
+        this.y = vect.y
     }
 
-    /*   public static double getDistance(double x1, double y1, double x2, double y2) {
-           double dx = x1 - x2;
-           double dy = y1 - y2;
-           return FastMath.hypot(dx, dy);
-       }
-   */
-    fun getDistanceTo(point: Point2D): Double {
-        return getDistanceTo(point.x, point.y)
+    override fun equals(other: Any?): Boolean {
+        if (other == null || !(other is Point2D)) {
+            return false
+        }
+        return this.x == other.x && this.y == other.y
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-
-        val point2D = o as Point2D?
-
-        return Integer.compare(point2D!!.intX, intX) == 0 && Integer.compare(point2D.intY, intY) == 0
+    operator fun set(x: Int, y: Int): Point2D {
+        this.x = x
+        this.y = y
+        return this
     }
 
-    override fun hashCode(): Int {
-        var result: Int
-        var temp: Long
-        temp = java.lang.Double.doubleToLongBits(x)
-        result = (temp xor temp.ushr(32)).toInt()
-        temp = java.lang.Double.doubleToLongBits(y)
-        result = 31 * result + (temp xor temp.ushr(32)).toInt()
-        return result
+    fun set(a: Point2D): Point2D {
+        this.x = a.x
+        this.y = a.y
+        return this
     }
 
-
-    fun add(x: Double, y: Double): Point2D {
-        return Point2D(this.x + x, this.y + y)
+    fun add(a: Point2D): Point2D {
+        this.x += a.x
+        this.y += a.y
+        return this
     }
 
-    constructor() {
-        x = 0.0
-        y = 0.0
+    fun sub(a: Point2D): Point2D {
+        this.x -= a.x
+        this.y -= a.y
+        return this
     }
 
-    constructor(v: Point2D) {
-        this.x = v.x
-        this.y = v.y
-        this.`val` = v.`val`
+    fun mult(a: Int): Point2D {
+        this.x *= a
+        this.y *= a
+        return this
     }
 
-    constructor(angle: Double) {
-        this.x = Math.cos(angle)
-        this.y = Math.sin(angle)
+    operator fun div(a: Int): Point2D {
+        this.x /= a
+        this.y /= a
+        return this
     }
 
-    constructor(x: Int, y: Int) {
-        this.x = x.toDouble()
-        this.y = y.toDouble()
-    }
-
-    fun copy(): Point2D {
-        return Point2D(this)
-    }
-
-    fun sub(v: Point2D): Point2D {
-        return Point2D(x - v.x, y - v.y)
-    }
-
-    fun sub(dx: Double, dy: Double): Point2D {
-        return Point2D(x - dx, y - dy)
-    }
-
-    fun mul(f: Double): Point2D {
-        return Point2D(x * f, y * f)
-    }
-
-    fun length(): Double {
-        //        return hypot(x, y);
-        return FastMath.hypot(x, y)
-    }
-
-    fun distance(v: Point2D): Double {
-
-        //        return hypot(x - v.x, y - v.y);
-        return FastMath.hypot(x - v.x, y - v.y)
-    }
-
-    fun squareDistance(v: Point2D): Double {
-        val tx = x - v.x
-        val ty = y - v.y
-        return tx * tx + ty * ty
-    }
-
-    fun squareDistance(x: Double, y: Double): Double {
-        val tx = this.x - x
-        val ty = this.y - y
-        return tx * tx + ty * ty
-    }
-
-    fun squareLength(): Double {
-        return x * x + y * y
-    }
-
-    fun reverse(): Point2D {
-        return Point2D(-x, -y)
+    fun negate(): Point2D {
+        this.x = -this.x
+        this.y = -this.y
+        return this
     }
 
     fun normalize(): Point2D {
-        val length = this.length()
-        return if (length == 0.0) {
-            Point2D(0.0, 0.0)
+        if (isNull)
+            return this
+
+        val absx = Math.abs(this.x)
+        val absy = Math.abs(this.y)
+        if (absx > absy) {
+            this.x /= absx
+            this.y = 0
+        } else if (absx < absy) {
+            this.x = 0
+            this.y /= absy
         } else {
-            Point2D(x / length, y / length)
+            this.x /= absx
+            this.y /= absy
         }
+        return this
     }
 
-    fun length(length: Double): Point2D {
-        val currentLength = this.length()
-        return if (currentLength == 0.0) {
-            this
-        } else {
-            this.mul(length / currentLength)
-        }
+    fun manhattanDistance(): Int {
+        return Math.abs(x) + Math.abs(y)
     }
 
-    fun leftPerpendicular(): Point2D {
-        return Point2D(y, -x)
+    fun manhattanDistance(a: Point2D): Int {
+        return Math.abs(this.x - a.x) + Math.abs(this.y - a.y)
     }
 
-    fun rightPerpendicular(): Point2D {
-        return Point2D(-y, x)
+    fun tchebychevDistance(): Int {
+        return Math.max(x, y)
     }
 
-    fun dotProduct(vector: Point2D): Double {
-        return x * vector.x + y * vector.y
+    fun tchebychevDistance(a: Point2D): Int {
+        return Math.max(Math.abs(this.x - a.x), Math.abs(this.y - a.y))
     }
 
-    fun angle(): Float {
-        //return Math.atan2(y, x);
-        return FastMath.atan2(y.toFloat(), x.toFloat())
+    fun euclidianDistance2(): Double {
+        return (x * x + y * y).toDouble()
     }
 
-    fun nearlyEqual(potentialIntersectionPoint: Point2D, epsilon: Double): Boolean {
-        return Math.abs(x - potentialIntersectionPoint.x) < epsilon && Math.abs(y - potentialIntersectionPoint.y) < epsilon
+    fun euclidianDistance2(a: Point2D): Double {
+        return Math.pow((this.x - a.x).toDouble(), 2.0) + Math.pow((this.y - a.y).toDouble(), 2.0)
     }
 
-    fun rotate(angle: Point2D): Point2D {
-        val newX = angle.x * x - angle.y * y
-        val newY = angle.y * x + angle.x * y
-        return Point2D(newX, newY)
+    fun euclidianDistance(): Double {
+        return Math.sqrt(euclidianDistance())
     }
 
-    fun rotateBack(angle: Point2D): Point2D {
-        val newX = angle.x * x + angle.y * y
-        val newY = angle.x * y - angle.y * x
-        return Point2D(newX, newY)
+    fun euclidianDistance(a: Point2D): Double {
+        return Math.sqrt(euclidianDistance2(a))
     }
 
-    operator fun div(f: Double): Point2D {
-        return Point2D(x / f, y / f)
+    override fun toString(): String {
+        return "[$x:$y]"
     }
-
-
-    fun add(point: Point2D): Point2D {
-        return add(point.x, point.y)
-    }
-
-    fun rotate(angle: Double): Point2D {
-
-        val x1 = (this.x * Math.cos(angle) - this.y * Math.sin(angle)).toFloat()
-
-        val y1 = (this.x * Math.sin(angle) + this.y * Math.cos(angle)).toFloat()
-
-        return Point2D(x1.toDouble(), y1.toDouble())
-    }
-
 
     companion object {
 
-        fun angle(x: Double, y: Double): Float {
-            return FastMath.atan2(y.toFloat(), x.toFloat())
+        fun add(a: Point2D, b: Point2D): Point2D {
+            return Point2D(a).add(b)
         }
 
-
-        fun getDistance(x1: Double, y1: Double, x2: Double, y2: Double): Double {
-            val dx = x1 - x2
-            val dy = y1 - y2
-            return Math.sqrt(dx * dx + dy * dy)
+        fun sub(a: Point2D, b: Point2D): Point2D {
+            return Point2D(a).sub(b)
         }
 
-        fun vector(fromX: Double, fromY: Double, toX: Double, toY: Double): Point2D {
-            return Point2D(toX - fromX, toY - fromY)
+        fun mult(a: Point2D, b: Int): Point2D {
+            return Point2D(a).mult(b)
         }
+
+        fun div(a: Point2D, b: Int): Point2D {
+            return Point2D(a).div(b)
+        }
+
+        val UP = Point2D(0, -1)
+        val RIGHT = Point2D(1, 0)
+        val DOWN = Point2D(0, 1)
+        val LEFT = Point2D(-1, 0)
     }
+
 }

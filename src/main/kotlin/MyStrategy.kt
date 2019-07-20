@@ -46,8 +46,11 @@ class MyStrategy : Strategy {
         this.move = move;
         if (tick != 0) {
             world.processPre(this.w)
+        } else {
+            world.createMap()
         }
         this.w = world;
+        w.calcMap()
         tick++
 
         if (!debugMessage.isEmpty()) {

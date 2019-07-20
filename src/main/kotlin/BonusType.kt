@@ -1,6 +1,7 @@
 enum class BonusType(val raw: String) {
-    SAW("saw")
-    ;
+    SAW("saw"),
+    SLOW("s"),
+    NITRO("n");
 
     companion object {
         fun fromString(s: String): BonusType {

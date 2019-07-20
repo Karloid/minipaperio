@@ -5,18 +5,17 @@ import org.json.JSONObject
  * Передается на вход обработчика `onMatchStarted` интерфейса [Strategy]
  */
 
+var speed: Int = 0
+var cell_width: Int = 0
+var x_cells_count: Int = 0
+var y_cells_count: Int = 0
+
 class MatchConfig(root: JSONObject) {
-
-    var speed: Int
-    var width: Int
-    var x_cells_count: Int
-    var y_cells_count: Int
-
     init {
         val realParams = root.getJSONObject("params")
         x_cells_count = realParams.getInt("x_cells_count")
         y_cells_count = realParams.getInt("y_cells_count")
-        width = realParams.getInt("width")
+        cell_width = realParams.getInt("width")
         speed = realParams.getInt("speed")
     }
 }

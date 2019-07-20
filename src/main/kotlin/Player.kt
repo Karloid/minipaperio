@@ -31,6 +31,6 @@ private fun JSONArray.toPoint2DList(): List<Point2D> {
     return List(this.count()) { getJSONArray(it).toPoint2D() }
 }
 
-private fun JSONArray.toPoint2D(): Point2D {
-    return Point2D(getInt(0), getInt(1))
+fun JSONArray.toPoint2D(): Point2D {
+    return Point2D(getInt(0) / cell_width, getInt(1) / cell_width)
 }
