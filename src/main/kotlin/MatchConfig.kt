@@ -1,4 +1,3 @@
-import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -6,60 +5,21 @@ import org.json.JSONObject
  * Передается на вход обработчика `onMatchStarted` интерфейса [Strategy]
  */
 
-class MatchConfig(params: JSONObject) {
-    //todo добавить нужные поля и классы и реализовать десериализацию json-объекта
-    var myLives: Int = 0
-    var enemyLives: Int = 0
+class MatchConfig(root: JSONObject) {
 
-    val carId: Int
-    val carType: CarType
-
-
-    var mapId: Int
-    val mapType: MapType
-
-    var buttonPoly = ArrayList<Point2D>()
+    var speed: Int
+    var width: Int
+    var x_cells_count: Int
+    var y_cells_count: Int
 
     init {
-        myLives = params.getInt("my_lives")
-        enemyLives = params.getInt("enemy_lives")
-        val protoCar = params.getJSONObject("proto_car")
-        carId = protoCar.getInt("external_id")
-        carType = CarType.values().first { it.id == carId }
-
-        buttonPoly.clear()
-        val buttonPolyJson = protoCar.getJSONArray("button_poly")
-        for (o in buttonPolyJson) {
-            if (o is JSONArray) {
-                buttonPoly.add(Point2D(o.getInt(0), o.getInt(1)))
-            }
-        }
-
-        mapId = params.getJSONObject("proto_map").getInt("external_id")
-        mapType = MapType.values().first { it.id == mapId }
-        // ...
+        val realParams = root.getJSONObject("params")
+        x_cells_count = realParams.getInt("x_cells_count")
+        y_cells_count = realParams.getInt("y_cells_count")
+        width = realParams.getInt("width")
+        speed = realParams.getInt("speed")
     }
 }
 
-enum class CarType(val id: kotlin.Int) {
-    Buggy(1),
-    Bus(2),
-    SquareWheelsBuggy(3),;
-}
-
-enum class MapType(val id: kotlin.Int) {
-    PillMap(1),
-    PillHubbleMap(2),
-    PillHillMap(3),
-    PillCarcassMap(4),
-    IslandMap(5),
-    IslandHoleMap(6), ;
-}
-
-/**
- * Состояние мира, присылаемое сервером на каждом тике.
- * Передается на вход обработчика `onNextTick` интерфейса [Strategy]
- */
-
-val MAP_WIDTH: Int = 1200
-val MAP_HEIGHT: Int = 800
+val REQUEST_MAX_TIME = 5_000
+val MAX_EXECUTION_TIME = 120_000

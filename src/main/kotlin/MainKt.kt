@@ -1,7 +1,7 @@
 import org.json.JSONObject
-import java.util.*
 
 var isLocal: Boolean = false
+
 object MainKt {
     private var robot: Strategy = MyStrategy()
 
@@ -12,45 +12,27 @@ object MainKt {
     fun main(args: Array<String>) {
         isLocal = args.size > 0
 
-        val commands = listOf("left", "right", "up", "down")
-        val scanner = Scanner(System.`in`)
-
-        while (true) {
-            val input = scanner.next()
-            System.out.print("{\"command\": \"${commands.random()}\"}\n")
-        }
-        
         var gameMessage: JSONObject?
-
+        gameMessage = JsonIO.readFromStdIn() ?: throw NullPointerException("game message is null!")
+        val config = MatchConfig(gameMessage)
+        robot.onMatchStarted(config)
         while (true) {
             try {
                 gameMessage = JsonIO.readFromStdIn() ?: throw NullPointerException("game message is null!")
 
-                val messageType = gameMessage.getEnum(MessageType::class.java, "type") ?: throw NullPointerException("messageType is null!")
+                myDebugLog(gameMessage.toString())
 
-                when (messageType) {
-                    MessageType.tick -> {
-                        val tickState = World(gameMessage.getJSONObject("params"))
-                        val move = Move()
-                        robot.onNextTick(tickState, move)
-                        move.send()
-                    }
-
-                    MessageType.new_match -> {
-                        if (isLocal) {
-                            System.err.println(gameMessage.toString(2))
-                        }
-                        val matchConfig = MatchConfig(gameMessage.getJSONObject("params"))
-                        robot.onMatchStarted(matchConfig)
-                    }
-                }
+                val tickState = World(gameMessage.getJSONObject("params"))
+                val move = Move()
+                robot.onNextTick(tickState, move)
+                move.send()
             } catch (e: Exception) {
                 if (isLocal) {
                     e.printStackTrace()
                 }
                 robot.onParsingError(e.message ?: "unknown")
                 val move = Move()
-                move.set(0)
+                move.set(Direction.UP)
                 move.send()
 
                 Thread.sleep(10)
@@ -66,8 +48,14 @@ object MainKt {
         }
     }
 
+    fun myDebugLog(outMsg: String) {
+        if (isLocal) {
+            System.err.println("myDebug$outMsg")
+        }
+    }
+
 }
 
 private fun <E> List<E>.random(): E {
-   return get((this.size * Math.random()).toInt())
+    return get((this.size * Math.random()).toInt())
 }

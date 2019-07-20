@@ -2,20 +2,28 @@ import org.json.JSONObject
 
 class World(params: JSONObject) {
 
-    var myCar: Car
-    var enemyCar: Car
-    var deadLine: Float = 0.toFloat()
+
+    var tick: Int
+
+    lateinit var me: Player
 
     init {
-        myCar = Car(params.getJSONArray("my_car"), this)
-        enemyCar = Car(params.getJSONArray("enemy_car"), this)
+        tick = params.getInt("tick_num")
+        val jsonPlayers = params.getJSONObject("players")
 
-        deadLine = params.getFloat("deadline_position")
+        val enPlayers = mutableListOf<Player>()
+        jsonPlayers.keys().forEach {
+            val p = Player(it, jsonPlayers.getJSONObject(it))
+            if (it == "i") {
+                enPlayers.add(p)
+            } else {
+                me = p
+            }
+        }
     }
 
     fun processPre(prevWorld: World) {
-        myCar.processPre(prevWorld.myCar)
-        enemyCar.processPre(prevWorld.enemyCar)
+
     }
 
 }
