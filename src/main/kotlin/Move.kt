@@ -47,7 +47,7 @@ enum class Direction {
         if (indexOf >= cValues.size) {
             indexOf = 0
         } else if (indexOf < 0) {
-            indexOf = cValues.size
+            indexOf = cValues.size - 1
         }
         return cValues.get(indexOf)
     }

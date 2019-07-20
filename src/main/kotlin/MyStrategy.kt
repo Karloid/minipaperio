@@ -13,6 +13,8 @@ class MyStrategy : Strategy {
 
     var tick = 0
 
+    var lastMove: Direction = Direction.UP
+
     private lateinit var m: MatchConfig
 
     private var s = State()
@@ -34,7 +36,9 @@ class MyStrategy : Strategy {
 
     private fun simpleStrategy() {
 
-        move.set(Direction.cValues.random())
+
+        lastMove = lastMove.toLeft()
+        move.set(lastMove)
 
     }
 
