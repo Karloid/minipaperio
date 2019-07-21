@@ -108,16 +108,29 @@ class Point2D {
         return Math.pow((this.x - a.x).toDouble(), 2.0) + Math.pow((this.y - a.y).toDouble(), 2.0)
     }
 
-    fun euclidianDistance(): Double {
-        return Math.sqrt(euclidianDistance())
+    fun eucDist(): Double {
+        return Math.sqrt(eucDist())
     }
 
-    fun euclidianDistance(a: Point2D): Double {
+    fun eucDist(a: Point2D): Double {
         return Math.sqrt(euclidianDistance2(a))
     }
 
     override fun toString(): String {
         return "[$x:$y]"
+    }
+
+    fun dirTo(pos: Point2D): Direction {
+        return when {
+            pos.x - 1 == x -> Direction.RIGHT
+            pos.x + 1 == x -> Direction.LEFT
+            pos.y + 1 == y -> Direction.DOWN
+            pos.y - 1 == y -> Direction.UP
+            else -> {
+                MainKt.myDebugLog("unable to find dir for $this $pos")
+                Direction.UP
+            }
+        }
     }
 
     companion object {

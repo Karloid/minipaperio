@@ -7,21 +7,19 @@ class Move internal constructor() {
 
     internal fun send() {
         val outString = """{"command":"${direction.toString().toLowerCase()}","debug":"$debug"}"""
-        MainKt.myDebugLog("my answer $outString")
+        MainKt.myDebugLog("cmd -> $direction")
         println(outString)
     }
 
     fun set(cmd: Direction) {
 
         direction = cmd
-
-        d(direction.toString())
     }
 
     fun d(debugMessage: String) {
         debug += debugMessage
         if (isLocal) {
-            System.err.println(debugMessage)
+            MainKt.myDebugLog(debugMessage)
         }
     }
 }

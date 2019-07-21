@@ -24,6 +24,15 @@ enum class Direction {
         return cValues.get(indexOf)
     }
 
+    fun isOpposite(dirTo: Direction): Boolean {
+        return when (dirTo) {
+            LEFT -> this == RIGHT
+            UP -> this == DOWN
+            RIGHT -> this == LEFT
+            DOWN -> this == UP
+        }
+    }
+
     companion object {
         fun fromString(s: String): Direction {
             return when (s) {

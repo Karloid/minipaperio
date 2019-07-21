@@ -20,8 +20,6 @@ object MainKt {
             try {
                 gameMessage = JsonIO.readFromStdIn() ?: throw NullPointerException("game message is null!")
 
-                myDebugLog(gameMessage.toString())
-
                 val tickState = World(gameMessage.getJSONObject("params"), config)
                 val move = Move()
                 robot.onNextTick(tickState, move)
@@ -50,7 +48,7 @@ object MainKt {
 
     fun myDebugLog(outMsg: String) {
         if (isLocal) {
-            System.err.println("myDebug$outMsg")
+            System.err.println(">: $outMsg")
         }
     }
 

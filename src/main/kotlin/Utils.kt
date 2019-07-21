@@ -45,3 +45,53 @@ fun <E> List<E>.fori(function: (E) -> Unit) {
 
 
 
+fun <E> List<E>?.isNullOrEmpty(): Boolean {
+    if (this == null) {
+        return true
+    }
+
+    return this.isEmpty()
+}
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun String?.nonEmptyOr(s: String) = if (this.isNullOrEmpty()) {
+    s
+} else {
+    this
+}
+
+inline fun <T> Boolean?.then(function: () -> T): T? {
+    return if (this != null && this) {
+        function()
+    } else {
+        null
+    }
+}
+
+inline fun <T> T?.elze(function: () -> T): T {
+    return if (this == null) {
+        function()
+    } else {
+        this
+    }
+}
+
+
+inline fun <T> Boolean?.then(mainFun: () -> T, elseFun: () -> T): T {
+    return if (this == true) {
+        mainFun()
+    } else {
+        elseFun()
+    }
+}
+
+inline fun ignoreTryCatch(function: () -> Unit) {
+    try {
+        function()
+    } catch (e: Throwable) {
+        //ignore
+    }
+}
+
+
+

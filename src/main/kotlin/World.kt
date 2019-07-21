@@ -18,9 +18,9 @@ class World(params: JSONObject, val config: MatchConfig) {
         jsonPlayers.keys().forEach {
             val p = Player(it, jsonPlayers.getJSONObject(it))
             if (it == "i") {
-                enPlayers.add(p)
-            } else {
                 me = p
+            } else {
+                enPlayers.add(p)
             }
         }
         val jsonBonuses = params.getJSONArray("bonuses")
@@ -53,5 +53,14 @@ class World(params: JSONObject, val config: MatchConfig) {
         cells = PlainArray(x_cells_count, y_cells_count) { MapCell() }
 
         cells.fori { x, y, cell -> cell.pos = Point2D(x, y) }
+    }
+
+    fun getAdjacent(position: Point2D): MutableList<MapCell> {
+        val result = mutableListOf<MapCell>()
+        cells[position.x - 1, position.y]?.let { result.add(it) }
+        cells[position.x, position.y - 1]?.let { result.add(it) }
+        cells[position.x, position.y + 1]?.let { result.add(it) }
+        cells[position.x + 1, position.y]?.let { result.add(it) }
+        return result
     }
 }
