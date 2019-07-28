@@ -14,7 +14,7 @@ class Player(id: String, jsonObject: JSONObject) {
         position = jsonObject.getJSONArray("position").toPoint2D()
         lines = jsonObject.getJSONArray("lines").toPoint2DList()
         activeBonuses = jsonObject.getJSONArray("bonuses").toActiveBonusesList()
-        direction = jsonObject.getString("direction").toDirection()
+        direction = (jsonObject.isNull("direction").then { "left" } ?: jsonObject.getString("direction")).toDirection()
         territory = jsonObject.getJSONArray("territory").toPoint2DList()
     }
 }
