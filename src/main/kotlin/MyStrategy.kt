@@ -55,7 +55,7 @@ class MyStrategy : Strategy {
         }
 
         if (!notMyCells.isEmpty()) {
-            moveToEnemyLines(notMyCells)
+            moveOutEnemyLines(notMyCells)
             return
         }
         move.d("no more steps hmm")
@@ -103,6 +103,18 @@ class MyStrategy : Strategy {
         }
     }
 
+    private fun moveOutEnemyLines(notMyCells: List<MapCell>) {
+        notMyCells.sortedBy { canCell ->
+            w.enPlayers.asSequence().flatMap { it.lines.asSequence() }
+                    .map { it.eucDist(canCell.pos) }.min()
+                    ?: -1.0
+        }.last().let {
+            logg("move out from enemy lines")
+            return moveTo(it)
+        }
+    }
+
+
     private fun logg(s: String) {
         move.d(s)
     }
@@ -139,7 +151,12 @@ class MyStrategy : Strategy {
         debugMessage = message
     }
 
+
+    private fun Move.d(s: String) {
+        appendToDebug("${w.tick}> $s")
+    }
 }
+
 
 fun Any?.isNull(): Boolean {
     return this == null

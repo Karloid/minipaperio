@@ -48,7 +48,7 @@ object MainKt {
 
     fun myDebugLog(outMsg: String) {
         if (isLocal) {
-            System.err.println(">: $outMsg")
+            System.err.println(": $outMsg")
         }
     }
 

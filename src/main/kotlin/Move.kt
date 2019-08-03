@@ -16,7 +16,7 @@ class Move internal constructor() {
         direction = cmd
     }
 
-    fun d(debugMessage: String) {
+    fun appendToDebug(debugMessage: String) {
         debug += debugMessage
         if (isLocal) {
             MainKt.myDebugLog(debugMessage)
