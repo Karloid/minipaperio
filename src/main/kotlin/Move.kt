@@ -1,3 +1,5 @@
+import org.json.JSONObject
+
 class Move internal constructor() {
 
     var direction: Direction = Direction.DOWN
@@ -6,7 +8,11 @@ class Move internal constructor() {
 
 
     internal fun send() {
-        val outString = """{"command":"${direction.toString().toLowerCase()}","debug":"$debug"}"""
+        val outString = JSONObject()
+                .put("command", direction.toString().toLowerCase())
+                .put("debug", debug)
+                .toString()
+
         MainKt.myDebugLog("cmd -> $direction")
         println(outString)
     }
