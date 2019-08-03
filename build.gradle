@@ -46,7 +46,11 @@ private static String getLr(String suspend) {
     def command = '/usr/local/bin/python3 ../miniaicups/paperio/local_runner/localrunner.py ' +
             '-p1 "java -agentlib:jdwp=transport=dt_socket,server=y,suspend=' + suspend +
             ',address=5005,quiet=y -jar ./build/libs/kotlinStrategy.jar 1" ' +
-            ' -p2 simple_bot -p3 simple_bot -p4 simple_bot -p5 simple_bot -p6 simple_bot' +
+            ' -p2 "java -jar ./kotlinStrategy17635.jar"' +
+            ' -p3 "java -jar ./kotlinStrategy17635.jar"' +
+            ' -p4 "java -jar ./kotlinStrategy17635.jar"' +
+            ' -p5 "java -jar ./kotlinStrategy17635.jar"' +
+            ' -p6 "java -jar ./kotlinStrategy17635.jar"' +
             ''
     println(command)
     return command 
