@@ -42,18 +42,18 @@ public class RewindClient {
 
 	void circle(double x, double y, double r, Color color, int layer) {
 		if (mirrorSize) {
-			//y = totalSize - y;
-			x = totalSize - x;
+			y = totalSize - y;
+			//x = totalSize - x;
 		}
 		send(String.format("{\"type\": \"circle\", \"x\": %f, \"y\": %f, \"r\": %f, \"color\": %d, \"layer\": %d}", x, y, r, color.getRGB(), layer));
 	}
 
 	void rect(double x1, double y1, double x2, double y2, Color color, int layer) {
 		if (mirrorSize) {
-			//y1 = totalSize - y1;
-			//y2 = totalSize - y2;
-			x1 = totalSize - x1;
-			x2 = totalSize - x2;
+			y1 = totalSize - y1;
+			y2 = totalSize - y2;
+		//	x1 = totalSize - x1;
+		//	x2 = totalSize - x2;
 		}
 
 		send(String.format("{\"type\": \"rectangle\", \"x1\": %f, \"y1\": %f, \"x2\": %f, \"y2\": %f, \"color\": %d, \"layer\": %d}", x1, y1, x2, y2, color.getRGB(), layer));
@@ -61,19 +61,19 @@ public class RewindClient {
 
 	void line(double x1, double y1, double x2, double y2, Color color, int layer) {
 		if (mirrorSize) {
-		//	y1 = totalSize - y1;
-		//	y2 = totalSize - y2;
+			y1 = totalSize - y1;
+			y2 = totalSize - y2;
 
-			x1 = totalSize - x1;
-			x2 = totalSize - x2;
+		//	x1 = totalSize - x1;
+		//	x2 = totalSize - x2;
 		}
 		send(String.format("{\"type\": \"line\", \"x1\": %f, \"y1\": %f, \"x2\": %f, \"y2\": %f, \"color\": %d, \"layer\": %d}", x1, y1, x2, y2, color.getRGB(), layer));
 	}
 
 	void popup(double x, double y, double r, String text) {
 		if (mirrorSize) {
-		//	y = totalSize - y;
-			x = totalSize - x;
+			y = totalSize - y;
+		//	x = totalSize - x;
 		}
 
 		send(String.format("{\"type\": \"popup\", \"x\": %f, \"y\": %f, \"r\": %f, \"text\": \"%s \"}", x, y, r, text));

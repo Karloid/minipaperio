@@ -1,4 +1,6 @@
+
 import org.json.JSONObject
+
 
 var isLocal: Boolean = false
 
@@ -24,7 +26,7 @@ object MainKt {
         while (true) {
             try {
                 gameMessage = JsonIO.readFromStdIn() ?: throw NullPointerException("game message is null!")
-
+               // (Math.random() > 0.5).then { throw RuntimeException() }
                 val tickState = World(gameMessage.getJSONObject("params"), config)
                 val move = Move()
                 strategy.onNextTick(tickState, move)
@@ -33,16 +35,19 @@ object MainKt {
                 if (isLocal) {
                     e.printStackTrace()
                 }
+
                 strategy.onParsingError(e.message ?: "unknown")
                 val move = Move()
-                move.set(Direction.UP)
+                move.set(strategy.lastMove)
+
+                move.appendToDebug("got exception $e \n${getStracktrace(e)}")
                 move.send()
 
                 Thread.sleep(10)
                 if (e is NullPointerException) {
                     npeCount++
                 }
-                if (npeCount > 100 || isLocal) {
+                if (isLocal) {
                     //probably it is the end
                     println("GG WP bye bye")
                     return
@@ -56,9 +61,5 @@ object MainKt {
             System.err.println(": $outMsg")
         }
     }
-
 }
 
-private fun <E> List<E>.random(): E {
-    return get((this.size * Math.random()).toInt())
-}

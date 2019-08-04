@@ -173,7 +173,7 @@ private fun Point2D.getAdjacent() {
 
 }
 
-private fun <T> Array<T>.random(): T {
+fun <T> Array<T>.random(): T {
     return get((this.size * Math.random()).toInt())
 }
 

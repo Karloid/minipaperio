@@ -1,3 +1,6 @@
+import java.io.PrintWriter
+import java.io.StringWriter
+
 val TWO_PI: Float = (Math.PI * 2f).toFloat()
 val HALF_PI: Float = (Math.PI / 2f).toFloat()
 
@@ -93,5 +96,17 @@ inline fun ignoreTryCatch(function: () -> Unit) {
     }
 }
 
+public fun getStracktrace(e: Exception): String {
+    val sw = StringWriter()
+    val pw = PrintWriter(sw)
+    e.printStackTrace(pw)
+    val sStackTrace = sw.toString() // stack trace as a string
+    return sStackTrace
+}
+
+
+private fun <E> List<E>.random(): E {
+    return get((this.size * Math.random()).toInt())
+}
 
 
