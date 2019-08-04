@@ -5,8 +5,8 @@ class MyStrategy : Strategy {
 
     private var debugMessage: String = ""
 
-    private lateinit var w: World
-    private lateinit var move: Move
+    lateinit var w: World
+    lateinit var move: Move
 
 
     var tick = 0
@@ -14,6 +14,8 @@ class MyStrategy : Strategy {
     var lastMove: Direction = Direction.UP
 
     private lateinit var m: MatchConfig
+
+    var painter: MyStrategyPainter = EmptyPaintner()
 
     private var s = State()
 
@@ -24,13 +26,18 @@ class MyStrategy : Strategy {
         debugMessage += ","
 
         s = State()
+
+        painter.onInitializeStrategy()
     }
 
     override fun onNextTick(world: World, move: Move) {
         pretick(move, world)
 
+        painter.onStartTick()
 
         simple()
+
+        painter.onEndTick()
         //circle()
     }
 

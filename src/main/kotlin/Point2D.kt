@@ -133,6 +133,15 @@ class Point2D {
         }
     }
 
+    fun applyDir(direction: Direction): Point2D {
+        return this.add(when (direction) {
+            Direction.LEFT -> LEFT
+            Direction.UP -> UP
+            Direction.RIGHT -> RIGHT
+            Direction.DOWN -> DOWN
+        })
+    }
+
     companion object {
 
         fun add(a: Point2D, b: Point2D): Point2D {
@@ -151,9 +160,9 @@ class Point2D {
             return Point2D(a).div(b)
         }
 
-        val UP = Point2D(0, -1)
+        val UP = Point2D(0, 1)
         val RIGHT = Point2D(1, 0)
-        val DOWN = Point2D(0, 1)
+        val DOWN = Point2D(0, -1)
         val LEFT = Point2D(-1, 0)
     }
 
