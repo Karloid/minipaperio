@@ -90,6 +90,7 @@ class RewindClientWrapper : MyStrategyPainter {
         line(from, from.applyDir(mys.move.direction), Color.BLUE)
 
         rc.message("\nmove is ${mys.move.direction}")
+        rc.message("msg-: ${mys.move.debug}")
         rc.endFrame()
     }
 

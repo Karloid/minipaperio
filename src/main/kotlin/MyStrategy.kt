@@ -57,23 +57,29 @@ class MyStrategy : Strategy {
         val myCells = adjacent.filter { it.territory == w.me }
 
         //seek to base
-        if (w.me.lines.size > 15 || (getMinDistFromEnToLine()) - 2 < getMinDistFromMeToMyTerr()) {
+        if (w.me.lines.size > 12 || (getMinDistFromEnToLine()) - 3 < getMinDistFromMeToMyTerr()) {
             moveToBase(myCells, notMyCells)
             return
         }
 
         if (!notMyCells.isEmpty()) {
+            //if (Math.random() > 0.7) {
+            //    notMyCells.random().let {
+            //        logg("move to random")
+            //        return moveTo(it)
+            //    }
+            //}
             notMyCells.sortedBy { canCell ->
-                w.enPlayers.asSequence().map { it.position.eucDist(canCell.pos) }.min()
+                w.enPlayers.asSequence().flatMap { it.territory.asSequence() }.map { it.eucDist(canCell.pos) }.min()
                         ?: -1.0
-            }.last().let {
-                logg("move out from enemys")
+            }.first().let {
+                logg("move to enemies territory")
                 return moveTo(it)
             }
             return
         }
         move.d("no more steps hmm")
-        moveToBase2(myCells, notMyCells)
+        moveToFarFromEnemy(myCells, notMyCells)
 
     }
 
@@ -113,21 +119,23 @@ class MyStrategy : Strategy {
         moveToBase(myCells, notMyCells)
     }
 
-    private fun moveToBase2(myCells: List<MapCell>, notMyCells: List<MapCell>) {
+    private fun moveToFarFromEnemy(myCells: List<MapCell>, notMyCells: List<MapCell>) {
+        val freeCellsAtBorder = w.me.territory.asSequence().flatMap { w.getAdjacent(it).asSequence().filter { it.territory != w.me } }.toList()
+        val farestCell = freeCellsAtBorder.maxBy { free ->
+            w.enPlayers.asSequence().map { it.position.eucDist(free.pos) }.min() ?: 100.0
+        }
+        val closestToTerr = freeCellsAtBorder.minBy { free ->
+            w.enPlayers.asSequence().flatMap { it.territory.asSequence() }
+                    .map { it.eucDist(free.pos) }.min() ?: 100.0
+        }
+        val target = closestToTerr
+
         myCells.sortedBy { canCell ->
-            var value = w.enPlayers.asSequence()
-                    .map { it.position.eucDist(canCell.pos) }
-                    .min() ?: -1.0
-            if (value < 0) {
-                value = w.cells.array.map {
-                    val sort = it.territory.isNull().then { it.pos.eucDist(canCell.pos) } ?: Double.MAX_VALUE
-                    return@map sort
-                }.min()!!
-            }
+            var value = target?.pos?.eucDist(canCell.pos) ?: 100.0
 
             value
         }.firstOrNull()?.let {
-            move.d("move to myCell closest to enemy")
+            move.d("move to myCell far from enemy")
             moveTo(it)
             return
         }

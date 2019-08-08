@@ -105,7 +105,7 @@ public fun getStracktrace(e: Exception): String {
 }
 
 
-private fun <E> List<E>.random(): E {
+fun <E> List<E>.random(): E {
     return get((this.size * Math.random()).toInt())
 }
 
