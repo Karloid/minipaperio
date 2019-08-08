@@ -57,7 +57,7 @@ class MyStrategy : Strategy {
         val myCells = adjacent.filter { it.territory == w.me }
 
         //seek to base
-        if (w.me.lines.size > 12 || (getMinDistFromEnToLine()) - 3 < getMinDistFromMeToMyTerr()) {
+        if (w.me.lines.size > 12 || getDistToEn() < 4 ||(getMinDistFromEnToLine()) - 3 < getMinDistFromMeToMyTerr()) {
             moveToBase(myCells, notMyCells)
             return
         }
@@ -70,8 +70,12 @@ class MyStrategy : Strategy {
             //    }
             //}
             notMyCells.sortedBy { canCell ->
-                w.enPlayers.asSequence().flatMap { it.territory.asSequence() }.map { it.eucDist(canCell.pos) }.min()
+                var sort = w.enPlayers.asSequence().flatMap { it.territory.asSequence() }.map { it.eucDist(canCell.pos) }.min()
                         ?: -1.0
+                sort += w.getAdjacent(canCell.pos)
+                        .count { it.lines == w.me || it.territory == w.me } * 2
+
+                sort
             }.first().let {
                 logg("move to enemies territory")
                 return moveTo(it)
@@ -81,6 +85,10 @@ class MyStrategy : Strategy {
         move.d("no more steps hmm")
         moveToFarFromEnemy(myCells, notMyCells)
 
+    }
+
+    private fun getDistToEn(): Double {
+        return w.enPlayers.asSequence().map { it.pos.eucDist(w.me.pos) }.min() ?: 100.0
     }
 
     private fun getMinDistFromMeToMyTerr(): Double = w.me.territory.asSequence().map { it.eucDist(w.me.pos) }.min()!!
@@ -128,7 +136,7 @@ class MyStrategy : Strategy {
             var sort = w.enPlayers.asSequence().flatMap { it.territory.asSequence() }
                     .map { it.eucDist(free.pos) }.min() ?: 100.0
 
-            sort -= (w.enPlayers.asSequence().map { it.pos.eucDist(free.pos) }.min() ?: 1.0) * 1.5
+            sort -= (w.enPlayers.asSequence().map { it.pos.eucDist(free.pos) }.min() ?: 1.0) * 2
             sort
         }
         val target = closestToTerr
