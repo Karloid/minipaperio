@@ -3,7 +3,7 @@ import org.json.JSONObject
 
 class Player(id: String, jsonObject: JSONObject) {
     var score: Int
-    val position: Point2D
+    val pos: Point2D
     val lines: List<Point2D>
     val activeBonuses: List<ActiveBonus>
     val direction: Direction
@@ -11,7 +11,7 @@ class Player(id: String, jsonObject: JSONObject) {
 
     init {
         score = jsonObject.getInt("score")
-        position = jsonObject.getJSONArray("position").toPoint2D()
+        pos = jsonObject.getJSONArray("position").toPoint2D()
         lines = jsonObject.getJSONArray("lines").toPoint2DList()
         activeBonuses = jsonObject.getJSONArray("bonuses").toActiveBonusesList()
         direction = (jsonObject.isNull("direction").then { "left" } ?: jsonObject.getString("direction")).toDirection()

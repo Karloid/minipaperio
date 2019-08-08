@@ -43,7 +43,7 @@ class MyStrategy : Strategy {
     }
 
     private fun stayAway() {
-        val myPos = w.me.position
+        val myPos = w.me.pos
 
         val adjacent = w.getAdjacent(myPos).filter { !w.me.direction.isOpposite(myPos.dirTo(it.pos)) }
 
@@ -83,16 +83,16 @@ class MyStrategy : Strategy {
 
     }
 
-    private fun getMinDistFromMeToMyTerr(): Double = w.me.territory.asSequence().map { it.eucDist(w.me.position) }.min()!!
+    private fun getMinDistFromMeToMyTerr(): Double = w.me.territory.asSequence().map { it.eucDist(w.me.pos) }.min()!!
     private fun getMinDistFromEnToLine() = w.enPlayers
             .asSequence()
             .map { enemy ->
                 w.me.lines.asSequence()
-                        .map { it.eucDist(enemy.position) }.min() ?: 1000.0
+                        .map { it.eucDist(enemy.pos) }.min() ?: 1000.0
             }.min() ?: 100.0
 
     private fun simple() {
-        val myPos = w.me.position
+        val myPos = w.me.pos
 
         val adjacent = w.getAdjacent(myPos).filter { !w.me.direction.isOpposite(myPos.dirTo(it.pos)) }
 
@@ -122,11 +122,14 @@ class MyStrategy : Strategy {
     private fun moveToFarFromEnemy(myCells: List<MapCell>, notMyCells: List<MapCell>) {
         val freeCellsAtBorder = w.me.territory.asSequence().flatMap { w.getAdjacent(it).asSequence().filter { it.territory != w.me } }.toList()
         val farestCell = freeCellsAtBorder.maxBy { free ->
-            w.enPlayers.asSequence().map { it.position.eucDist(free.pos) }.min() ?: 100.0
+            w.enPlayers.asSequence().map { it.pos.eucDist(free.pos) }.min() ?: 100.0
         }
         val closestToTerr = freeCellsAtBorder.minBy { free ->
-            w.enPlayers.asSequence().flatMap { it.territory.asSequence() }
+            var sort = w.enPlayers.asSequence().flatMap { it.territory.asSequence() }
                     .map { it.eucDist(free.pos) }.min() ?: 100.0
+
+            sort -= (w.enPlayers.asSequence().map { it.pos.eucDist(free.pos) }.min() ?: 1.0) * 1.5
+            sort
         }
         val target = closestToTerr
 
@@ -213,7 +216,7 @@ class MyStrategy : Strategy {
     }
 
     private fun moveTo(it: MapCell) {
-        move.set(w.me.position.dirTo(it.pos))
+        move.set(w.me.pos.dirTo(it.pos))
     }
 
     private fun circle() {

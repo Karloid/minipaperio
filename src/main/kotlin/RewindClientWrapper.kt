@@ -19,21 +19,21 @@ class RewindClientWrapper : MyStrategyPainter {
             drawCells(it.lines, lineColor(it), linePadding)
         }
         allPlayers.fori { it ->
-            drawCell(it.position, playerColor(it), 8)
+            drawCell(it.pos, playerColor(it), 8)
             if (itsMe(it)) {
-                val pos = it.position
+                val pos = it.pos
                 val x1 = pos.x.toDouble() * cellSize + 4
                 val y1 = pos.y.toDouble() * cellSize + 4
                 rc.message("pos.x pos.x = ${pos.x} pos.x.toDouble() * cellSize + 4:${pos.x.toDouble() * cellSize + 4}")
                 rc.message("debug cellSize:$cellSize x1 $x1, y1 $y1, ${x1 + cellSize - 4 * 2}, ${y1 + cellSize - 4 * 2}, Color, commodityLayer")
             }
-            drawCellDir(it.position, it.direction, playerColor(it))
+            drawCellDir(it.pos, it.direction, playerColor(it))
         }
 
 
         drawCell(Point2D(0,0), Color.GRAY, 0);
         drawCell(Point2D(10,5), Color.GREEN, 0);
-        rc.message("my pos ${mys.w.me.position}")
+        rc.message("my pos ${mys.w.me.pos}")
 
         allPlayers.sortedBy { it.score }.fori {
             rc.message("${it.score}${(itsMe(it)).then { "!" } ?: ""}")
@@ -85,7 +85,7 @@ class RewindClientWrapper : MyStrategyPainter {
 
     override fun onEndTick() {
 
-        val from = mys.w.me.position
+        val from = mys.w.me.pos
 
         line(from, from.applyDir(mys.move.direction), Color.BLUE)
 

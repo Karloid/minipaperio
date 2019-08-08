@@ -51,7 +51,8 @@ private static String getLr(String suspend) {
             ' -p3 simple_bot' +
             //' -p4 "java -jar ./kotlinStrategy17635_revert.jar"' +
             ' -p4 simple_bot' +
-            ' -p5 simple_bot' +
+            //' -p5 simple_bot' +
+            ' -p5 "java -jar ./kotlinStrategy18950_attck.jar"' +
             ' -p6 "java -jar ./kotlinStrategy17635.jar"' +
             ''
     println(command)
