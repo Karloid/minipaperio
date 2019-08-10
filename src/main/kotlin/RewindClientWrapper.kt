@@ -31,8 +31,8 @@ class RewindClientWrapper : MyStrategyPainter {
         }
 
 
-        drawCell(Point2D(0,0), Color.GRAY, 0);
-        drawCell(Point2D(10,5), Color.GREEN, 0);
+        //drawCell(Point2D(0,0), Color.GRAY, 0);
+      //  drawCell(Point2D(10,5), Color.GREEN, 0);
         rc.message("my pos ${mys.w.me.pos}")
 
         allPlayers.sortedBy { it.score }.fori {
@@ -87,7 +87,7 @@ class RewindClientWrapper : MyStrategyPainter {
 
         val from = mys.w.me.pos
 
-        line(from, from.applyDir(mys.move.direction), Color.BLUE)
+        //line(from, from.applyDir(mys.move.direction), Color.BLUE)
 
         rc.message("\nmove is ${mys.move.direction}")
         rc.message("msg-: ${mys.move.debug}")

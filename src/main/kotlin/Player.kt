@@ -17,6 +17,10 @@ class Player(val id: String, jsonObject: JSONObject) {
         direction = (jsonObject.isNull("direction").then { "left" } ?: jsonObject.getString("direction")).toDirection()
         territory = jsonObject.getJSONArray("territory").toPoint2DList()
     }
+
+    override fun toString(): String {
+        return "Player(id='$id', pos=$pos, direction=$direction)"
+    }
 }
 
 private fun String.toDirection(): Direction {

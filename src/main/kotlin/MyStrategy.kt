@@ -1,6 +1,6 @@
 //TODO delete archive before zip
 //test
-
+//TODO change to INTS
 class MyStrategy : Strategy {
 
     private var debugMessage: String = ""
@@ -38,48 +38,97 @@ class MyStrategy : Strategy {
         // simple()
         stayAway()
 
-        painter.onEndTick()
         //circle()
+        val nextPoint = w.me.pos.applyDir(move.direction)
+        logg("dir -> ${move.direction} to $nextPoint w.cells-> ${w.cells.get(nextPoint)}")
+
+        painter.onEndTick()
     }
 
     private fun stayAway() {
         val myPos = w.me.pos
 
+        val meOnMyTerr = onMyTerr(myPos)
+
         val adjacent = w.getAdjacent(myPos).filter { !w.me.direction.isOpposite(myPos.dirTo(it.pos)) }
+                .filter { cell ->
+                    //avoid enemies from facing on not my terr
+                    if ((!meOnMyTerr || !onMyTerr(cell.pos)) && w.enPlayers.any { it.pos == cell.pos }) {
+                        logg("avoid enemies from facing on not my terr, drop turn ${cell.pos}")
+                        return@filter false
+                    }
+
+                    true
+                }
 
 
-        adjacent.firstOrNull { it.lines != null && it.lines != w.me }?.let {
-            logg("move at enemy line!")
-            return moveTo(it)
+        adjacent.filter { it.lines != null && it.lines != w.me }.forEach {
+            val adjacent2 = w.getAdjacent(it.pos)
+            val enemiesNear = w.enPlayers.filter { en -> adjacent2.any { it.pos == en.pos } }
+
+            //no enemies with one step from theirs territory
+            val noEndingEnemies = !enemiesNear.any { en ->
+                w.getAdjacent(en.pos).any { it.territory == en }
+            }
+            if (noEndingEnemies) {
+                logg("move at enemy line!")
+                return moveTo(it)
+            } else {
+                logg("skip cutting line due enemies with one step from theirs territory")
+            }
         }
 
-        val notMyCells = adjacent.filter { it.territory != w.me && it.lines != w.me }
+        val notMyCells = adjacent.filter {
+            it.territory != w.me && it.lines != w.me
+        }.toMutableList()
+
         val myCells = adjacent.filter { it.territory == w.me }
 
+        val notMyCellsAccess = HashMap<Point2D, PlainArray<Int>>()
+        notMyCells.forEach {
+            val access = w.calcAccess(it.pos, w.me, w.getAllPlayers(), listOf(it.pos))
+            notMyCellsAccess[it.pos] = access
+        }
+
+        notMyCells.removeAll {
+            val access = notMyCellsAccess[it.pos]!!
+
+            val result = !(w.me.territory.asSequence().any { myTerr -> access.getFast(myTerr) < Int.MAX_VALUE })
+            if (result) {
+                logg("removed dead end cell $it")
+            }
+            result
+        }
+
         //seek to base
-        if (w.me.lines.size > 12 || getDistToEn() < 4 || (getMinDistFromEnToLine()) - 3 < getMinDistFromMeToMyTerr()) {
-            moveToBase(myCells, notMyCells)
+        if (w.me.lines.size > 12 || getDistToEn() < 4 || (getMinDistFromEnToLine()) - 5 < getMinDistFromMeToMyTerr()) {
+            moveToFarFromEnemy(myCells, notMyCells, notMyCellsAccess)
             return
         }
 
-        if (!notMyCells.isEmpty()) {
+        if (notMyCells.isNotEmpty()) {
             notMyCells.sortedBy { canCell ->
-                var sort = w.enPlayers.asSequence().flatMap { it.territory.asSequence() }.map { it.eucDist(canCell.pos) }.min()
+                var sort = w.enPlayers.asSequence()
+                        .flatMap {
+                            it.territory.asSequence()
+                        }.map {
+                            w.getAccess(w.me).getFast(it)
+                        }.min()?.toDouble()
                         ?: -1.0
                 sort += w.getAdjacent(canCell.pos)
                         .count { it.lines == w.me || it.territory == w.me } * 2
 
                 sort
             }.first().let {
-                logg("move to enemies territory")
+                logg("move towards enemies territory")
                 return moveTo(it)
             }
-            return
         }
         move.d("no more steps hmm")
-        moveToFarFromEnemy(myCells, notMyCells)
-
+        moveToFarFromEnemy(myCells, notMyCells, notMyCellsAccess)
     }
+
+    private fun onMyTerr(myPos: Point2D) = w.cells.getFast(myPos).territory == w.me
 
     private fun getDistToEn(): Double {
         return w.enPlayers.asSequence().map { w.getAccess(it).getFast(w.me.pos) }.min()?.toDouble() ?: 100.0
@@ -98,70 +147,48 @@ class MyStrategy : Strategy {
                         .map { access.getFast(it) }.min()?.toDouble() ?: 1000.0
             }.min() ?: 100.0
 
-    private fun simple() {
-        val myPos = w.me.pos
-
-        val adjacent = w.getAdjacent(myPos).filter { !w.me.direction.isOpposite(myPos.dirTo(it.pos)) }
-
-
-        adjacent.firstOrNull { it.lines != null && it.lines != w.me }?.let {
-            logg("move at enemy line!")
-            return moveTo(it)
-        }
-
-        val notMyCells = adjacent.filter { it.territory != w.me && it.lines != w.me }
-        val myCells = adjacent.filter { it.territory == w.me }
-
-        //seek to base
-        if (w.me.lines.size > 5) {
-            moveToBase(myCells, notMyCells)
-            return
-        }
-
-        if (!notMyCells.isEmpty()) {
-            moveOutEnemyLines(notMyCells)
-            return
-        }
-        move.d("no more steps hmm")
-        moveToBase(myCells, notMyCells)
-    }
-
-    private fun moveToFarFromEnemy(myCells: List<MapCell>, notMyCells: List<MapCell>) {
+    private fun moveToFarFromEnemy(myCells: List<MapCell>, notMyCells: List<MapCell>, notMyCellsAccess: HashMap<Point2D, PlainArray<Int>>) {
         val freeCellsAtBorder = w.me.territory.asSequence().flatMap { w.getAdjacent(it).asSequence().filter { it.territory != w.me } }.toList()
-        val farestCell = freeCellsAtBorder.maxBy { free ->
-            w.enPlayers.asSequence().map { it.pos.eucDist(free.pos) }.min() ?: 100.0
-        }
+
         val closestToTerr = freeCellsAtBorder.minBy { free ->
             var sort = w.enPlayers.asSequence().flatMap { it.territory.asSequence() }
                     .map { it.eucDist(free.pos) }.min() ?: 100.0
 
-            sort -= (w.enPlayers.asSequence().map { it.pos.eucDist(free.pos) }.min() ?: 1.0) * 2
+           // sort -= (w.enPlayers.asSequence().map { it.pos.eucDist(free.pos) }.min() ?: 1.0) / 2
             sort
         }
         val target = closestToTerr
+
+        logg("moveToFarFromEnemy target is $target")
 
         myCells.sortedBy { canCell ->
             var value = target?.pos?.eucDist(canCell.pos) ?: 100.0
 
             value
         }.firstOrNull()?.let {
-            move.d("move to myCell far from enemy")
+            move.d("moveToFarFromEnemy move to myCell far from enemy")
             moveTo(it)
             return
         }
 
-        notMyCells.sortedBy { canCell ->
-            w.me.territory.asSequence().map { it.eucDist(canCell.pos) }.min() ?: -1.0
+        val getDistToMe: (MapCell) -> Int = { canCell ->
+            val access = notMyCellsAccess.get(canCell.pos)!!
+
+            w.me.territory.asSequence().map { access.getFast(it) }.min() ?: Int.MAX_VALUE
         }
+        val variants = notMyCells.sortedBy(getDistToMe)
+        variants
                 .first()
                 .let {
-                    move.d("move to my cells trough not my")
+                    move.d("moveToFarFromEnemy move to my cells trough not my, variants")
+                    if (isLocal) {
+                        logg("variants " + variants.map { it.toString() + " SCORE " + getDistToMe(it) }.toString())
+                    }
                     moveTo(it)
                 }
-
     }
 
-    private fun moveToBase(myCells: List<MapCell>, notMyCells: List<MapCell>) {
+    private fun moveToBase(myCells: List<MapCell>, notMyCells: List<MapCell>, notMyCellsAccess: HashMap<Point2D, PlainArray<Int>>) {
         myCells.sortedBy { canCell ->
             var value = w.enPlayers.asSequence()
                     .flatMap { it.territory.asSequence() + it.lines }
@@ -176,17 +203,19 @@ class MyStrategy : Strategy {
 
             value
         }.firstOrNull()?.let {
-            move.d("move to myCell closest to enemy")
+            move.d("moveToBase move to myCell closest to enemy")
             moveTo(it)
             return
         }
 
         notMyCells.sortedBy { canCell ->
-            w.me.territory.asSequence().map { it.eucDist(canCell.pos) }.min() ?: -1.0
+            val access = notMyCellsAccess.get(canCell.pos)!!
+
+            w.me.territory.asSequence().map { access.getFast(it) }.min() ?: Int.MAX_VALUE
         }
                 .first()
                 .let {
-                    move.d("move to my cells trough not my")
+                    move.d("moveToBase move to my cells trough not my")
                     moveTo(it)
                 }
     }

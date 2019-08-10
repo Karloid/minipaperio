@@ -13,7 +13,6 @@ class Move internal constructor() {
                 .put("debug", debug)
                 .toString()
 
-        MainKt.myDebugLog("cmd -> $direction")
         println(outString)
     }
 

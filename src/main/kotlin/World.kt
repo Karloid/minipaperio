@@ -56,20 +56,7 @@ class World(params: JSONObject, val config: MatchConfig) {
 
         val allPlayers = enPlayers + me
         allPlayers.forEach {
-            access[it.id] = calcAccess(it, allPlayers)
-
-            if (it == me) {
-                //printDebugMyMap(access[it.id]!!)
-            }
-        }
-    }
-
-    private fun printDebugMyMap(plainArray: PlainArray<Int>) {
-        repeat(y_cells_count) { y ->
-            var string = ""
-            repeat(x_cells_count) { x ->
-                string += " " + plainArray.get(x, y)
-            }
+            access[it.id] = calcAccess(it.pos, it, allPlayers, null)
         }
     }
 
@@ -79,12 +66,12 @@ class World(params: JSONObject, val config: MatchConfig) {
         cells.fori { x, y, cell -> cell.pos = Point2D(x, y) }
     }
 
-    private fun calcAccess(curPlayer: Player, allPlayers: List<Player>): PlainArray<Int> {
+    public fun calcAccess(pointFrom: Point2D, curPlayer: Player, allPlayers: List<Player>, blackList: List<Point2D>?): PlainArray<Int> {
         val result = PlainArray(x_cells_count, y_cells_count) { Int.MAX_VALUE }
 
-        result.setFast(curPlayer.pos, 0)
+        result.setFast(pointFrom, 0)
         val queueTest = LinkedList<Point2D>();
-        queueTest.add(curPlayer.pos)
+        queueTest.add(pointFrom)
 
         while (true) {
             val el = queueTest.pollFirst() ?: break
@@ -93,7 +80,7 @@ class World(params: JSONObject, val config: MatchConfig) {
 
             val myVal = result.getFast(el)
             adjacent.forEach { candidate ->
-                if (candidate.lines == curPlayer) {
+                if (candidate.lines == curPlayer || blackList?.contains(candidate.pos) == true) {
                     return@forEach
                 }
                 val candidatePos = candidate.pos
@@ -119,5 +106,9 @@ class World(params: JSONObject, val config: MatchConfig) {
 
     fun getAccess(it: Player): PlainArray<Int> {
         return access[it.id]!!
+    }
+
+    fun getAllPlayers(): List<Player> {
+        return enPlayers + me
     }
 }

@@ -23,6 +23,7 @@ class Point2D {
         return this.x == other.x && this.y == other.y
     }
 
+
     operator fun set(x: Int, y: Int): Point2D {
         this.x = x
         this.y = y
@@ -140,6 +141,12 @@ class Point2D {
             Direction.RIGHT -> RIGHT
             Direction.DOWN -> DOWN
         })
+    }
+
+    override fun hashCode(): Int {
+        var result = x
+        result = 31 * result + y
+        return result
     }
 
     companion object {
