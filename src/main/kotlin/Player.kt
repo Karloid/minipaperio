@@ -1,7 +1,7 @@
 import org.json.JSONArray
 import org.json.JSONObject
 
-class Player(id: String, jsonObject: JSONObject) {
+class Player(val id: String, jsonObject: JSONObject) {
     var score: Int
     val pos: Point2D
     val lines: List<Point2D>

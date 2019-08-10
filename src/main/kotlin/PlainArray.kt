@@ -32,6 +32,10 @@ class PlainArray<T> internal constructor(val cellsWidth: Int, val cellsHeight: I
         array[y * cellsWidth + x] = `val`
     }
 
+    internal fun setFast(x: Int, y: Int, `val`: T) {
+        array[y * cellsWidth + x] = `val`
+    }
+
     fun inBounds(x: Int, y: Int): Boolean {
         return !(x < 0 || x >= cellsWidth || y < 0 || y >= cellsHeight)
     }
@@ -42,5 +46,21 @@ class PlainArray<T> internal constructor(val cellsWidth: Int, val cellsHeight: I
                 block(x, y, getFast(x, y))
             }
         }
+    }
+
+    fun set(pos: Point2D, value : T) {
+        set(pos.x, pos.y, value)
+    }
+
+    fun setFast(pos: Point2D, value : T) {
+        setFast(pos.x, pos.y, value)
+    }
+
+    fun get(pos: Point2D): T? {
+        return get(pos.x, pos.y)
+    }
+
+    fun getFast(pos: Point2D): T {
+        return getFast(pos.x, pos.y)
     }
 }
