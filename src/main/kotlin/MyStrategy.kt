@@ -57,18 +57,12 @@ class MyStrategy : Strategy {
         val myCells = adjacent.filter { it.territory == w.me }
 
         //seek to base
-        if (w.me.lines.size > 12 || getDistToEn() < 4 ||(getMinDistFromEnToLine()) - 3 < getMinDistFromMeToMyTerr()) {
+        if (w.me.lines.size > 12 || getDistToEn() < 4 || (getMinDistFromEnToLine()) - 3 < getMinDistFromMeToMyTerr()) {
             moveToBase(myCells, notMyCells)
             return
         }
 
         if (!notMyCells.isEmpty()) {
-            //if (Math.random() > 0.7) {
-            //    notMyCells.random().let {
-            //        logg("move to random")
-            //        return moveTo(it)
-            //    }
-            //}
             notMyCells.sortedBy { canCell ->
                 var sort = w.enPlayers.asSequence().flatMap { it.territory.asSequence() }.map { it.eucDist(canCell.pos) }.min()
                         ?: -1.0
@@ -88,15 +82,20 @@ class MyStrategy : Strategy {
     }
 
     private fun getDistToEn(): Double {
-        return w.enPlayers.asSequence().map { it.pos.eucDist(w.me.pos) }.min() ?: 100.0
+        return w.enPlayers.asSequence().map { w.getAccess(it).getFast(w.me.pos) }.min()?.toDouble() ?: 100.0
     }
 
-    private fun getMinDistFromMeToMyTerr(): Double = w.me.territory.asSequence().map { it.eucDist(w.me.pos) }.min()!!
+    private fun getMinDistFromMeToMyTerr(): Double {
+        val access = w.getAccess(w.me)
+        return w.me.territory.asSequence().map { myTerr -> access.getFast(myTerr) }.min()?.toDouble()!!
+    }
+
     private fun getMinDistFromEnToLine() = w.enPlayers
             .asSequence()
             .map { enemy ->
+                val access = w.getAccess(enemy)
                 w.me.lines.asSequence()
-                        .map { it.eucDist(enemy.pos) }.min() ?: 1000.0
+                        .map { access.getFast(it) }.min()?.toDouble() ?: 1000.0
             }.min() ?: 100.0
 
     private fun simple() {

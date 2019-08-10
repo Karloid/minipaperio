@@ -5,7 +5,7 @@ import kotlin.collections.HashMap
 class World(params: JSONObject, val config: MatchConfig) {
 
     //player.id to steps
-    private lateinit var access: HashMap<String, PlainArray<Int>>
+    lateinit var access: HashMap<String, PlainArray<Int>>
     var tick: Int
     lateinit var cells: PlainArray<MapCell>
 
@@ -59,7 +59,7 @@ class World(params: JSONObject, val config: MatchConfig) {
             access[it.id] = calcAccess(it, allPlayers)
 
             if (it == me) {
-                printDebugMyMap(access[it.id]!!)
+                //printDebugMyMap(access[it.id]!!)
             }
         }
     }
@@ -70,7 +70,6 @@ class World(params: JSONObject, val config: MatchConfig) {
             repeat(x_cells_count) { x ->
                 string += " " + plainArray.get(x, y)
             }
-            MainKt.myDebugLog(string)
         }
     }
 
@@ -116,5 +115,9 @@ class World(params: JSONObject, val config: MatchConfig) {
         cells[position.x, position.y + 1]?.let { result.add(it) }
         cells[position.x + 1, position.y]?.let { result.add(it) }
         return result
+    }
+
+    fun getAccess(it: Player): PlainArray<Int> {
+        return access[it.id]!!
     }
 }
