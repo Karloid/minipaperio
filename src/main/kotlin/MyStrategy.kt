@@ -58,7 +58,7 @@ class MyStrategy : Strategy {
                 .filter { cell ->
                     //avoid enemies from facing on not my terr
                     if ((!meOnMyTerr || !onMyTerr(cell.pos)) && w.enPlayers.any { en ->
-                                var result = en.pos.eucDist(cell.pos) < 1.5
+                                var result = en.pos.eucDist(cell.pos) < 1.1
                                 if (result && en.pos.eucDist(cell.pos) > 0.1) {
                                     if (cell.pos.dirTo(en.pos) == (en.direction)) {
                                         logg("its cell is opossite to en direction, is safe ${cell.pos}")
@@ -67,7 +67,7 @@ class MyStrategy : Strategy {
                                 }
                                 result
                             }) {
-                        logg("avoid enemies from facing on not my terr, drop turn ${cell.pos}")
+                        logg("avoid enemies from facing on not my terr, drop turn ${cell.pos} ${w.me.pos.dirTo(cell.pos)}")
                         return@filter false
                     }
 
@@ -138,7 +138,7 @@ class MyStrategy : Strategy {
         }
 
         //seek to base
-        if (w.me.lines.size > allEnemiesDead.then { 14 } ?: 8 || getDistToEn() < 4 || (getMinDistFromEnToLine()) - 3 < getMinDistFromMeToMyTerr()) {
+        if (w.me.lines.size > allEnemiesDead.then { 14 } ?: 8 || getDistToEn() < 4 || (getMinDistFromEnToLine()) - 5 < getMinDistFromMeToMyTerr()) {
             if (meOnMyTerr) {
                 moveToBaseOrInsideBase(myCells, notMyCells, notMyCellsAccess)
             } else {
@@ -155,7 +155,10 @@ class MyStrategy : Strategy {
 
                 val keepDistFroMyTerr = allEnemiesDead.then { 6 } ?: 4
 
-                val enKoeff = getMinDistFromEn(canCell.pos)
+                var enKoeff = getMinDistFromEn(canCell.pos)
+                if (enKoeff > 10) {
+                    enKoeff *= -1
+                }
 
                 var result = abs(keepDistFroMyTerr - minDistToMyTerr).toDouble()
 
@@ -232,7 +235,7 @@ class MyStrategy : Strategy {
         var candidateTargets = freeCellsAtBorder.filter { cell ->
             (w.enPlayers.asSequence().map {
                 w.getAccess(it).getFast(cell.pos)
-            }.min() ?: 100) > 5
+            }.min() ?: 100) > 3
         }
 
         if (candidateTargets.isEmpty()) {
