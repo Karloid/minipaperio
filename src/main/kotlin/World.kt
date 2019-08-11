@@ -80,7 +80,10 @@ class World(params: JSONObject, val config: MatchConfig) {
 
             val myVal = result.getFast(el)
             adjacent.forEach { candidate ->
-                if (candidate.lines == curPlayer || blackList?.contains(candidate.pos) == true) {
+                if (candidate.lines == curPlayer || blackList?.contains(candidate.pos) == true || (
+                                curPlayer == me &&
+                                allPlayers.any { candidate.pos == it.pos })
+                ) {
                     return@forEach
                 }
                 val candidatePos = candidate.pos
