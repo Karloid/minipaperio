@@ -80,7 +80,7 @@ class RewindClientWrapper : MyStrategyPainter {
     }
 
     private fun terrColor(it: Player): Color {
-        return (it == mys.w.me).then { myTerrColor } ?: enTerrColor
+        return enTerrColors[it.id]!!
     }
 
     override fun onEndTick() {
@@ -144,6 +144,16 @@ class RewindClientWrapper : MyStrategyPainter {
 
         private val myTerrColor = Color(0x52, 0x55, 0xC8)
         private val enTerrColor = Color(0xC8, 0x5E, 0x5B)
+
+        private val enTerrColors = mapOf(
+                "1" to Color(0x00, 0x00, 0xff),
+                "2" to Color(0xC8, 0xaE, 0x5B),
+                "3" to Color(0xC8, 0x5E, 0x5B),
+                "4" to Color(0x18, 0x5E, 0x5B),
+                "5" to Color.gray,
+                "6" to Color.cyan,
+                "i" to Color(0x52, 0x55, 0xC8)
+        )
 
         private val myPlayerColor = Color.BLUE
         private val enPlayerColor = Color.RED

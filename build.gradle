@@ -47,9 +47,8 @@ private static String getLr(String suspend) {
             '-p1 "java -agentlib:jdwp=transport=dt_socket,server=y,suspend=' + suspend +
             ',address=5005,quiet=y -jar ./build/libs/kotlinStrategy.jar local_debug" ' +
             ' -p2 "java -jar ./kotlinStrategy20374.jar"' +
-            ' -p3 "java -jar ./kotlinStrategy18950_attck.jar"' +
-            ' -p4 simple_bot' +
-            //' -p5 simple_bot' +
+            ' -p3 "java -jar ./kotlinStrategy20374.jar"' +
+            ' -p4 "java -jar ./kotlinStrategy20374.jar"' +
             ' -p5 "java -jar ./kotlinStrategy18950_attck.jar"' +
             ' -p6 "java -jar ./kotlinStrategy20374.jar"' +
             ''

@@ -1,3 +1,5 @@
+import java.lang.Math.abs
+
 //TODO delete archive before zip
 //test
 //TODO change to INTS
@@ -40,7 +42,7 @@ class MyStrategy : Strategy {
 
         //circle()
         val nextPoint = w.me.pos.applyDir(move.direction)
-        logg("dir -> ${move.direction} to $nextPoint w.cells-> ${w.cells.get(nextPoint)}")
+        logg("dir -> ${move.direction} to $nextPoint w.cells-> ${w.cells.get(nextPoint)?.pos}")
 
         painter.onEndTick()
     }
@@ -100,32 +102,46 @@ class MyStrategy : Strategy {
             result
         }
 
+        val currentAccessScope = w.calcAccess(w.me.pos, w.me, w.getAllPlayers(), w.me.territory)
+
+        var accessablePos = 0
+        currentAccessScope.fori { x, y, v ->
+            if (v < Int.MAX_VALUE) {
+                accessablePos++;
+            }
+        }
+
+        if (!meOnMyTerr && accessablePos < x_cells_count * y_cells_count / 2) {
+            logg("moveBackToBase due we in dead end")
+            moveBackToBase(myCells, notMyCells, notMyCellsAccess)
+            return
+        }
+
         //seek to base
-        if (w.me.lines.size > 12 || getDistToEn() < 4 || (getMinDistFromEnToLine()) - 5 < getMinDistFromMeToMyTerr()) {
-            moveToFarFromEnemy(myCells, notMyCells, notMyCellsAccess)
+        if (w.me.lines.size > 12 || getDistToEn() < 4 || (getMinDistFromEnToLine()) - 4 < getMinDistFromMeToMyTerr()) {
+            moveBackToBase(myCells, notMyCells, notMyCellsAccess)
             return
         }
 
         if (notMyCells.isNotEmpty()) {
-            notMyCells.sortedBy { canCell ->
-                var sort = w.enPlayers.asSequence()
-                        .flatMap {
-                            it.territory.asSequence()
-                        }.map {
-                            w.getAccess(w.me).getFast(it)
-                        }.min()?.toDouble()
-                        ?: -1.0
-                sort += w.getAdjacent(canCell.pos)
-                        .count { it.lines == w.me || it.territory == w.me } * 2
+            val sortFun: (MapCell) -> Int = { canCell ->
+                val access = notMyCellsAccess[canCell.pos]!!
 
-                sort
-            }.first().let {
-                logg("move towards enemies territory")
+                val minDistToMyTerr = w.me.territory.asSequence().map { access.getFast(it) }.min() ?: 10
+
+                val keepDistFroMyTerr = 4
+                abs(keepDistFroMyTerr - minDistToMyTerr)
+            }
+
+            val notMySortedByDistToMe = notMyCells.sortedBy(sortFun)
+
+            notMySortedByDistToMe.first().let {
+                logg("move to catch territory")
                 return moveTo(it)
             }
         }
         move.d("no more steps hmm")
-        moveToFarFromEnemy(myCells, notMyCells, notMyCellsAccess)
+        moveBackToBase(myCells, notMyCells, notMyCellsAccess)
     }
 
     private fun onMyTerr(myPos: Point2D) = w.cells.getFast(myPos).territory == w.me
@@ -147,26 +163,26 @@ class MyStrategy : Strategy {
                         .map { access.getFast(it) }.min()?.toDouble() ?: 1000.0
             }.min() ?: 100.0
 
-    private fun moveToFarFromEnemy(myCells: List<MapCell>, notMyCells: List<MapCell>, notMyCellsAccess: HashMap<Point2D, PlainArray<Int>>) {
+    private fun moveBackToBase(myCells: List<MapCell>, notMyCells: List<MapCell>, notMyCellsAccess: HashMap<Point2D, PlainArray<Int>>) {
         val freeCellsAtBorder = w.me.territory.asSequence().flatMap { w.getAdjacent(it).asSequence().filter { it.territory != w.me } }.toList()
 
         val closestToTerr = freeCellsAtBorder.minBy { free ->
             var sort = w.enPlayers.asSequence().flatMap { it.territory.asSequence() }
                     .map { it.eucDist(free.pos) }.min() ?: 100.0
 
-           // sort -= (w.enPlayers.asSequence().map { it.pos.eucDist(free.pos) }.min() ?: 1.0) / 2
+            // sort -= (w.enPlayers.asSequence().map { it.pos.eucDist(free.pos) }.min() ?: 1.0) / 2
             sort
         }
         val target = closestToTerr
 
-        logg("moveToFarFromEnemy target is $target")
+        logg("moveBackToBase target is $target")
 
         myCells.sortedBy { canCell ->
             var value = target?.pos?.eucDist(canCell.pos) ?: 100.0
 
             value
         }.firstOrNull()?.let {
-            move.d("moveToFarFromEnemy move to myCell far from enemy")
+            move.d("moveBackToBase move to myCell far from enemy")
             moveTo(it)
             return
         }
@@ -180,7 +196,7 @@ class MyStrategy : Strategy {
         variants
                 .first()
                 .let {
-                    move.d("moveToFarFromEnemy move to my cells trough not my, variants")
+                    move.d("moveBackToBase move to my cells trough not my, variants")
                     if (isLocal) {
                         logg("variants " + variants.map { it.toString() + " SCORE " + getDistToMe(it) }.toString())
                     }
@@ -304,3 +320,37 @@ fun <T> Array<T>.random(): T {
 
 class State {
 }
+
+
+/**
+ * Найти множество точек охватываемых для заливки очень просто.
+
+Берем матрицу размерами W*H равными размерами поля.
+
+В каждую ячейку пишем значение 0 (что значит NOT_FILLED)
+
+Для всех ячеек территории игрока и его шлейфа пишем значение 1 (т.е. INNER)
+
+Берем очередь queue, в которую заносим все клетки, которые находятся у границы карты (т.е. x==0 || y == 0 || x == W - 1 || y == H - 1) у которых значение NOT_FILLED
+
+Заливаем от границ всю карту - для каждого значения из queue берем соседей, если там значение NOT_FILLED, то добавляем его в queue, и закрашиваем в OUTER = 2:
+
+while (!queue.empty())
+{
+CellId p = queue.pop_front();
+
+for (int dir = 0; dir < 4; ++dir)
+{
+XY newP = getNeigbour(p, (Direction) dir);
+if (isValidXY(newP))
+{
+if (cells[newP] == NOT_FILLED)
+{
+cells[newP] = OUTER;
+queue.push_back(newP);
+}
+}
+}
+}
+6.Итого все клетки, у которых останется значение NOT_FILLED, те нас и интересуют (плюс к ним значения из шлейфа)
+ */
