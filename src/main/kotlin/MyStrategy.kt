@@ -58,7 +58,7 @@ class MyStrategy : Strategy {
                 .filter { cell ->
                     //avoid enemies from facing on not my terr
                     if ((!meOnMyTerr || !onMyTerr(cell.pos)) && w.enPlayers.any { en ->
-                                var result = en.pos.eucDist(cell.pos) < 1.1
+                                var result = en.pos.eucDist(cell.pos) < 2.1     // < TODO check, mb change ack to 1.1
                                 if (result && en.pos.eucDist(cell.pos) > 0.1) {
                                     if (cell.pos.dirTo(en.pos) == (en.direction)) {
                                         logg("its cell is opossite to en direction, is safe ${cell.pos}")
