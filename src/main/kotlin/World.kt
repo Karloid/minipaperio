@@ -114,4 +114,8 @@ class World(params: JSONObject, val config: MatchConfig) {
     fun getAllPlayers(): List<Player> {
         return enPlayers + me
     }
+
+    fun getMyAccess(): PlainArray<Int> {
+        return getAccess(me)
+    }
 }

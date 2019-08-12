@@ -38,6 +38,19 @@ class RewindClientWrapper : MyStrategyPainter {
         allPlayers.sortedBy { it.score }.fori {
             rc.message("${it.score}${(itsMe(it)).then { "!" } ?: ""}")
         }
+
+
+        mys.w.bonuses.forEach {
+            drawCell(it.pos, getBonusColor(it), cellSize / 5)
+        }
+    }
+
+    private fun getBonusColor(bonus: Bonus): Color {
+        return when (bonus.type) {
+            BonusType.SAW -> Color.MAGENTA
+            BonusType.SLOW -> Color.yellow
+            BonusType.NITRO -> Color.orange
+        }
     }
 
     private fun itsMe(it: Player) = it == mys.w.me

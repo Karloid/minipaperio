@@ -22,7 +22,7 @@ class Move internal constructor() {
     }
 
     fun appendToDebug(debugMessage: String) {
-        debug += debugMessage
+        debug += "\\n" + debugMessage
         if (isLocal) {
             MainKt.myDebugLog(debugMessage)
         }
