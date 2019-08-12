@@ -79,17 +79,22 @@ class MyStrategy : Strategy {
                 }
 
 
-        adjacent.filter { it.lines != null && it.lines != w.me }.forEach {
-            val adjacent2 = w.getAdjacent(it.pos)
+        adjacent.filter { it.lines != null && it.lines != w.me }.forEach { adj ->
+            val adjacent2 = w.getAdjacent(adj.pos)
             val enemiesNear = w.enPlayers.filter { en -> adjacent2.any { it.pos == en.pos } }
 
             //no enemies with one step from theirs territory
-            val noEndingEnemies = !enemiesNear.any { en ->
+            var noEndingEnemies = enemiesNear.none() { en ->
                 w.getAdjacent(en.pos).any { it.territory == en }
+            }
+            val dangerEnemy = w.enPlayers.firstOrNull() { enemy -> w.getAccess(enemy).getFast(adj.pos) <= 1.1 && enemy.lines.size <= w.me.lines.size }
+            if (dangerEnemy != null) {
+                logg("there is enemy which can kill us by lines length $dangerEnemy, not going to enemy line $adj")
+                noEndingEnemies = false
             }
             if (noEndingEnemies) {
                 logg("move at enemy line!")
-                return moveTo(it)
+                return moveTo(adj)
             } else {
                 logg("skip cutting line due enemies with one step from theirs territory")
             }
@@ -307,7 +312,15 @@ class MyStrategy : Strategy {
 
             val distFromEnToThisCell = (w.enPlayers.map { en -> w.getAccess(en).getFast(notMyCell.pos) }.min()?.toDouble()
                     ?: 100.0) / 100.0
-            return@sortedBy distToMe - distFromEnToThisCell
+
+
+            var result = distToMe - distFromEnToThisCell
+
+            val dir = w.me.pos.dirTo(notMyCell.pos)
+            if (dir == lastMove) {
+                result -= 0.1
+            }
+            return@sortedBy result
         }.firstOrNull()?.let {
             logg("moveBackToBase move to closest to my terr cell")
             moveTo(it)
@@ -360,6 +373,13 @@ class MyStrategy : Strategy {
 
                 enTerrDist += w.getAccess(w.me).getFast(free.pos) / 100.0
                 enTerrDist -= (w.enPlayers.map { getDistFromPlayer(it, free) }.min()?.toDouble() ?: 100.0) / 100.0
+
+                if (w.getMyAccess().getFast(free.pos)==1 && w.enPlayers.any{w.getAccess(it).getFast(free.pos) == 2}) {
+                    enTerrDist += 30 //banned
+                    logg("dangereous move, banned $free ${getDirTo(free)}")
+                }
+
+
                 enTerrDist
             } else {
                 w.getAccess(w.me).getFast(free.pos).toDouble()
@@ -375,9 +395,13 @@ class MyStrategy : Strategy {
 
         logg("moveToBaseOrInsideBase target is $target")
 
-        myCells.sortedBy { canCell ->
+        (myCells + notMyCells).sortedBy { canCell ->
             var value = target?.pos?.eucDist(canCell.pos) ?: 100.0
             value -= getMinDistFromEn(canCell.pos) / 100.0
+            if (w.getMyAccess().getFast(canCell.pos)==1 && w.enPlayers.any{w.getAccess(it).getFast(canCell.pos) == 2}) {
+                value += 30 //banned
+                logg("dangereous move to target, banned $canCell ${getDirTo(canCell)}")
+            }
             value
         }.firstOrNull()?.let {
             move.d("moveToBaseOrInsideBase move to target $target")
@@ -400,6 +424,10 @@ class MyStrategy : Strategy {
                     }
                     moveTo(it)
                 } ?: logg("moveToBaseOrInsideBase empty collections! !")
+    }
+
+    private fun getDirTo(free: MapCell): Direction {
+        return w.me.pos.dirTo(free.pos)
     }
 
     private fun getDistFromPlayer(it: Player, cell: MapCell) = w.getAccess(it).getFast(cell.pos)

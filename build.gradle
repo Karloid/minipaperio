@@ -44,13 +44,13 @@ build.dependsOn shadowJar
 
 private static String getLr(String suspend) {
     def command = '/usr/local/bin/python3 ../miniaicups/paperio/local_runner/localrunner.py ' +
-            '-p4 "java -agentlib:jdwp=transport=dt_socket,server=y,suspend=' + suspend +
+            '-p1 "java -agentlib:jdwp=transport=dt_socket,server=y,suspend=' + suspend +
             ',address=5005,quiet=y -jar ./build/libs/kotlinStrategy.jar local_debug" ' +
             ' -p5 "java -jar ./kotlinStrategy18950.jar"' +
             ' -p3 "java -jar ./kotlinStrategy20727.jar"' +
             ' -p2 "java -jar ./kotlinStrategy20727.jar"' +
             ' -p6 "java -jar ./kotlinStrategy20727.jar"' +
-            ' -p1 "java -jar ./kotlinStrategy20374.jar"' +
+            ' -p4 "java -jar ./kotlinStrategy20374.jar"' +
             ''
     println(command)
     return command 
